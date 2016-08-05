@@ -203,6 +203,10 @@ inline bool ReadRichImageToAnnotatedDatum(const string& filename,
                       anno_datum);
 }
 
+bool ReadTXTToAnnotatedDatum(const string& labelname, const int img_height,
+    const int img_width, const std::map<string, int>& name_to_label,
+    AnnotatedDatum* anno_datum);
+
 bool ReadXMLToAnnotatedDatum(const string& labelname, const int img_height,
     const int img_width, const std::map<string, int>& name_to_label,
     AnnotatedDatum* anno_datum);

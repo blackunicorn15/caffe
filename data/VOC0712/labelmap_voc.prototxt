@@ -4,102 +4,42 @@ item {
   display_name: "background"
 }
 item {
-  name: "aeroplane"
+  name: "audi_a4_back"
   label: 1
-  display_name: "aeroplane"
+  display_name: "audi_a4_back"
 }
 item {
-  name: "bicycle"
+  name: "audi_a4_front"
   label: 2
-  display_name: "bicycle"
+  display_name: "audi_a4_front"
 }
 item {
-  name: "bird"
+  name: "bmw_m3_back"
   label: 3
-  display_name: "bird"
+  display_name: "bmw_m3_back"
 }
 item {
-  name: "boat"
+  name: "bmw_m3_front"
   label: 4
-  display_name: "boat"
+  display_name: "bmw_m3_front"
 }
 item {
-  name: "bottle"
+  name: "gmc_sierra_1500_back"
   label: 5
-  display_name: "bottle"
+  display_name: "gmc_sierra_1500_back"
 }
 item {
-  name: "bus"
+  name: "gmc_sierra_1500_front"
   label: 6
-  display_name: "bus"
+  display_name: "gmc_sierra_1500_front"
 }
 item {
-  name: "car"
+  name: "honda_civic_back"
   label: 7
-  display_name: "car"
+  display_name: "honda_civic_back"
 }
 item {
-  name: "cat"
+  name: "honda_civic_front"
   label: 8
-  display_name: "cat"
-}
-item {
-  name: "chair"
-  label: 9
-  display_name: "chair"
-}
-item {
-  name: "cow"
-  label: 10
-  display_name: "cow"
-}
-item {
-  name: "diningtable"
-  label: 11
-  display_name: "diningtable"
-}
-item {
-  name: "dog"
-  label: 12
-  display_name: "dog"
-}
-item {
-  name: "horse"
-  label: 13
-  display_name: "horse"
-}
-item {
-  name: "motorbike"
-  label: 14
-  display_name: "motorbike"
-}
-item {
-  name: "person"
-  label: 15
-  display_name: "person"
-}
-item {
-  name: "pottedplant"
-  label: 16
-  display_name: "pottedplant"
-}
-item {
-  name: "sheep"
-  label: 17
-  display_name: "sheep"
-}
-item {
-  name: "sofa"
-  label: 18
-  display_name: "sofa"
-}
-item {
-  name: "train"
-  label: 19
-  display_name: "train"
-}
-item {
-  name: "tvmonitor"
-  label: 20
-  display_name: "tvmonitor"
+  display_name: "honda_civic_front"
 }

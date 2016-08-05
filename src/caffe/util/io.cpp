@@ -218,10 +218,14 @@ bool ReadRichImageToAnnotatedDatum(const string& filename,
       } else if (labeltype == "json") {
         return ReadJSONToAnnotatedDatum(labelfile, ori_height, ori_width,
                                         name_to_label, anno_datum);
-      } else if (labeltype == "txt") {
-        return ReadTxtToAnnotatedDatum(labelfile, ori_height, ori_width,
-                                       anno_datum);
-      } else {
+      } 
+else if (labeltype == "txt") {
+        return ReadTXTToAnnotatedDatum(labelfile, ori_height, ori_width,
+                                        name_to_label, anno_datum);
+      } 
+
+else {
+
         LOG(FATAL) << "Unknown label file type.";
         return false;
       }
@@ -252,6 +256,97 @@ bool ReadFileToDatum(const string& filename, const int label,
   } else {
     return false;
   }
+}
+
+// Parse TXT annotation files .
+bool ReadTXTToAnnotatedDatum(const string& labelfile, const int img_height,
+    const int img_width, const std::map<string, int>& name_to_label,
+    AnnotatedDatum* anno_datum) {
+
+    int  instance_id=0;
+
+    std::ifstream infile(labelfile.c_str());
+    int num_bbox;
+    infile >> num_bbox;     // number of bounding boxes in the labelfile
+
+
+    std::cout<< "FILENAME:"<<labelfile<<std::endl;
+
+    for (int i=0;i<num_bbox;i++){
+
+        int xmin,ymin,xmax,ymax;
+        std::string name;
+
+        infile >>xmin>>ymin>>xmax>>ymax>>name; //reading the bbox and label
+
+        std::cout<< "data:"<<xmin<<","<<ymin<<","<<xmax<<","<<ymax<<","<<name<<","<<std::endl;
+
+        Annotation* anno = NULL;
+        bool difficult = false;
+        bool found_group = false;
+
+        int label = name_to_label.find(name)->second;
+
+        //checking if this label already exists
+        for (int g = 0; g < anno_datum->annotation_group_size(); ++g) {
+          AnnotationGroup* anno_group =
+              anno_datum->mutable_annotation_group(g);
+          if (label == anno_group->group_label()) {
+            if (anno_group->annotation_size() == 0) {
+              instance_id = 0;
+            } else {
+              instance_id = anno_group->annotation(
+                  anno_group->annotation_size() - 1).instance_id() + 1;
+            }
+            anno = anno_group->add_annotation();
+            found_group = true;
+          }
+        }
+        if (!found_group) {
+          // If there is no such annotation_group, create a new one.
+          AnnotationGroup* anno_group = anno_datum->add_annotation_group();
+          anno_group->set_group_label(label);
+          anno = anno_group->add_annotation();
+          instance_id = 0;
+
+          std::cout<< "Group created:"<<labelfile<<std::endl;
+        }
+
+        anno->set_instance_id(instance_id++);
+
+        CHECK_NOTNULL(anno);
+        LOG_IF(WARNING, xmin > img_width) << labelfile <<
+            " bounding box exceeds image boundary.";
+        LOG_IF(WARNING, ymin > img_height) << labelfile <<
+            " bounding box exceeds image boundary.";
+        LOG_IF(WARNING, xmax > img_width) << labelfile <<
+            " bounding box exceeds image boundary.";
+        LOG_IF(WARNING, ymax > img_height) << labelfile <<
+            " bounding box exceeds image boundary.";
+        LOG_IF(WARNING, xmin < 0) << labelfile <<
+            " bounding box exceeds image boundary.";
+        LOG_IF(WARNING, ymin < 0) << labelfile <<
+            " bounding box exceeds image boundary.";
+        LOG_IF(WARNING, xmax < 0) << labelfile <<
+            " bounding box exceeds image boundary.";
+        LOG_IF(WARNING, ymax < 0) << labelfile <<
+            " bounding box exceeds image boundary.";
+        LOG_IF(WARNING, xmin > xmax) << labelfile <<
+            " bounding box irregular.";
+        LOG_IF(WARNING, ymin > ymax) << labelfile <<
+            " bounding box irregular.";
+        // Store the normalized bounding box.
+        NormalizedBBox* bbox = anno->mutable_bbox();
+        bbox->set_xmin(static_cast<float>(xmin) / img_width);
+        bbox->set_ymin(static_cast<float>(ymin) / img_height);
+        bbox->set_xmax(static_cast<float>(xmax) / img_width);
+        bbox->set_ymax(static_cast<float>(ymax) / img_height);
+        bbox->set_difficult(difficult);
+
+    }
+
+    return true;
+
 }
 
 // Parse VOC/ILSVRC detection annotation.
@@ -593,6 +688,8 @@ bool MapNameToLabel(const LabelMap& map, const bool strict_check,
   for (int i = 0; i < map.item_size(); ++i) {
     const string& name = map.item(i).name();
     const int label = map.item(i).label();
+
+    std::cout<<"name:"<<name<<" label:"<<label<<std::endl;
     if (strict_check) {
       if (!name_to_label->insert(std::make_pair(name, label)).second) {
         LOG(FATAL) << "There are many duplicates of name: " << name;

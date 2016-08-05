@@ -41,9 +41,9 @@ DEFINE_bool(shuffle, false,
     "Randomly shuffle the order of images and their labels");
 DEFINE_string(backend, "lmdb",
     "The backend {lmdb, leveldb} for storing the result");
-DEFINE_string(anno_type, "classification",
+DEFINE_string(anno_type, "detection",
     "The type of annotation {classification, detection}.");
-DEFINE_string(label_type, "xml",
+DEFINE_string(label_type, "txt",
     "The type of annotation file format.");
 DEFINE_string(label_map_file, "",
     "A file with LabelMap protobuf message.");
@@ -154,13 +154,13 @@ int main(int argc, char** argv) {
       enc = fn.substr(p);
       std::transform(enc.begin(), enc.end(), enc.begin(), ::tolower);
     }
-    filename = root_folder + lines[line_id].first;
+    filename = root_folder +"/data/Images/"+ lines[line_id].first;
     if (anno_type == "classification") {
       label = boost::get<int>(lines[line_id].second);
       status = ReadImageToDatum(filename, label, resize_height, resize_width,
           min_dim, max_dim, is_color, enc, datum);
     } else if (anno_type == "detection") {
-      labelname = root_folder + boost::get<std::string>(lines[line_id].second);
+      labelname = root_folder +"/data/Annotations/"+ boost::get<std::string>(lines[line_id].second);
       status = ReadRichImageToAnnotatedDatum(filename, labelname, resize_height,
           resize_width, min_dim, max_dim, is_color, enc, type, label_type,
           name_to_label, &anno_datum);
