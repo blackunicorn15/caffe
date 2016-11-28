@@ -789,6 +789,213 @@ def InceptionV3Body(net, from_layer, output_pred=False, **bn_param):
 
   return net
 
+def SqueezeNetBody(net, from_layer, need_fc=True, fully_conv=False, reduced=False,
+                     dilated=False, nopool=True, dropout=True, freeze_layers=[],
+                     block_name="fire2", squeeze1='squeeze1x1', expand1='expand1x1', expand3='expand3x3',
+                     block_name1="fire3", block_name2="fire4", block_name3="fire5", block_name4="fire6",
+                     block_name5="fire7", block_name6="fire8", block_name7="fire9"):
+
+
+    kwargs = {
+        # 'param': [dict(lr_mult=1, decay_mult=1), dict(lr_mult=2, decay_mult=0)],
+        'weight_filler': dict(type='xavier')}  # ,
+
+    # 'bias_filler': dict(type='constant', value=0)}
+
+    mod_kwargs = {'weight_filler': dict(type='gaussian', mean=0.0, std=0.01)}
+
+    assert from_layer in net.keys()
+
+    net.conv1 = L.Convolution(net[from_layer], num_output=64, kernel_size=3, stride=2, **kwargs)
+
+    net.relu_conv1 = L.ReLU(net.conv1, in_place=True)
+
+    net.pool1 = L.Pooling(net.relu_conv1, pool=P.Pooling.MAX, kernel_size=3, stride=2)
+
+    conv_name1 = '{}/{}'.format(block_name, squeeze1)
+    net[conv_name1] = L.Convolution(net.pool1, num_output=16, kernel_size=1, **kwargs)
+
+    relu_name1 = '{}/relu_{}'.format(block_name, squeeze1)
+    net[relu_name1] = L.ReLU(net[conv_name1], in_place=True)
+
+    conv_name2 = '{}/{}'.format(block_name, expand1)
+    net[conv_name2] = L.Convolution(net[relu_name1], num_output=64, kernel_size=1, **kwargs)
+
+    relu_name2 = '{}/relu_{}'.format(block_name, expand1)
+    net[relu_name2] = L.ReLU(net[conv_name2], in_place=True)
+
+    conv_name3 = '{}/{}'.format(block_name, expand3)
+    net[conv_name3] = L.Convolution(net[relu_name1], num_output=64, pad=1, kernel_size=3, **kwargs)
+
+    relu_name3 = '{}/relu_{}'.format(block_name, expand3)
+    net[relu_name3] = L.ReLU(net[conv_name3], in_place=True)
+
+    concat_name1 = '{}/concat'.format(block_name)
+    net[concat_name1] = L.Concat(net[conv_name2], net[conv_name3])
+
+    conv_name4 = '{}/{}'.format(block_name1, squeeze1)
+    net[conv_name4] = L.Convolution(net[concat_name1], num_output=16, kernel_size=1, **kwargs)
+
+    relu_name4 = '{}/relu_{}'.format(block_name1, squeeze1)
+    net[relu_name4] = L.ReLU(net[conv_name4], in_place=True)
+
+    conv_name5 = '{}/{}'.format(block_name1, expand1)
+    net[conv_name5] = L.Convolution(net[relu_name4], num_output=64, kernel_size=1, **kwargs)
+
+    relu_name5 = '{}/relu_{}'.format(block_name1, expand1)
+    net[relu_name5] = L.ReLU(net[conv_name5], in_place=True)
+
+    conv_name6 = '{}/{}'.format(block_name1, expand3)
+    net[conv_name6] = L.Convolution(net[conv_name4], num_output=64, pad=1, kernel_size=3, **kwargs)
+
+    relu_name6 = '{}/relu_{}'.format(block_name1, expand3)
+    net[relu_name6] = L.ReLU(net[conv_name6], in_place=True)
+
+    concat_name2 = '{}/concat'.format(block_name1)
+    net[concat_name2] = L.Concat(net[conv_name5], net[conv_name6])
+
+    net.pool3 = L.Pooling(net[concat_name2], pool=P.Pooling.MAX, kernel_size=3, stride=2)
+
+    conv_name7 = '{}/{}'.format(block_name2, squeeze1)
+    net[conv_name7] = L.Convolution(net.pool3, num_output=32, kernel_size=1, **kwargs)
+
+    relu_name7 = '{}/relu_{}'.format(block_name2, squeeze1)
+    net[relu_name7] = L.ReLU(net[conv_name7], in_place=True)
+
+    conv_name8 = '{}/{}'.format(block_name2, expand1)
+    net[conv_name8] = L.Convolution(net[relu_name7], num_output=128, kernel_size=1, **kwargs)
+
+    relu_name8 = '{}/relu_{}'.format(block_name2, expand1)
+    net[relu_name8] = L.ReLU(net[conv_name8], in_place=True)
+
+    conv_name9 = '{}/{}'.format(block_name2, expand3)
+    net[conv_name9] = L.Convolution(net[relu_name7], num_output=128, pad=1, kernel_size=3, **kwargs)
+
+    relu_name9 = '{}/relu_{}'.format(block_name2, expand3)
+    net[relu_name9] = L.ReLU(net[conv_name9], in_place=True)
+
+    concat_name3 = '{}/concat'.format(block_name2)
+    net[concat_name3] = L.Concat(net[conv_name8], net[conv_name9])
+
+    conv_name10 = '{}/{}'.format(block_name3, squeeze1)
+    net[conv_name10] = L.Convolution(net[concat_name3], num_output=32, kernel_size=1, **kwargs)
+
+    relu_name10 = '{}/relu_{}'.format(block_name3, squeeze1)
+    net[relu_name10] = L.ReLU(net[conv_name10], in_place=True)
+
+    conv_name11 = '{}/{}'.format(block_name3, expand1)
+    net[conv_name11] = L.Convolution(net[relu_name10], num_output=128, kernel_size=1, **kwargs)
+
+    relu_name11 = '{}/relu_{}'.format(block_name3, expand1)
+    net[relu_name11] = L.ReLU(net[conv_name11], in_place=True)
+
+    conv_name12 = '{}/{}'.format(block_name3, expand3)
+    net[conv_name12] = L.Convolution(net[relu_name10], num_output=128, pad=1, kernel_size=3, **kwargs)
+
+    relu_name12 = '{}/relu_{}'.format(block_name3, expand3)
+    net[relu_name12] = L.ReLU(net[conv_name12], in_place=True)
+
+    concat_name4 = '{}/concat'.format(block_name3)
+    net[concat_name4] = L.Concat(net[conv_name11], net[conv_name12])
+
+    net.pool5 = L.Pooling(net[concat_name4], pool=P.Pooling.MAX, kernel_size=3, stride=2)
+
+    conv_name13 = '{}/{}'.format(block_name4, squeeze1)
+    net[conv_name13] = L.Convolution(net.pool5, num_output=48, kernel_size=1, **kwargs)
+
+    relu_name13 = '{}/relu_{}'.format(block_name4, squeeze1)
+    net[relu_name13] = L.ReLU(net[conv_name13], in_place=True)
+
+    conv_name13 = '{}/{}'.format(block_name4, expand1)
+    net[conv_name13] = L.Convolution(net[relu_name13], num_output=192, kernel_size=1, **kwargs)
+
+    relu_name14 = '{}/relu_{}'.format(block_name4, expand1)
+    net[relu_name14] = L.ReLU(net[conv_name13], in_place=True)
+
+    conv_name14 = '{}/{}'.format(block_name4, expand3)
+    net[conv_name14] = L.Convolution(net[relu_name13], num_output=192, pad=1, kernel_size=3, **kwargs)
+
+    relu_name15 = '{}/relu_{}'.format(block_name4, expand3)
+    net[relu_name15] = L.ReLU(net[conv_name14], in_place=True)
+
+    concat_name5 = '{}/concat'.format(block_name4)
+    net[concat_name5] = L.Concat(net[conv_name13], net[conv_name14])
+
+    conv_name15 = '{}/{}'.format(block_name5, squeeze1)
+    net[conv_name15] = L.Convolution(net[concat_name5], num_output=48, kernel_size=1, **kwargs)
+
+    relu_name16 = '{}/relu_{}'.format(block_name5, squeeze1)
+    net[relu_name16] = L.ReLU(net[conv_name15], in_place=True)
+
+    conv_name16 = '{}/{}'.format(block_name5, expand1)
+    net[conv_name16] = L.Convolution(net[relu_name16], num_output=192, kernel_size=1, **kwargs)
+
+    relu_name17 = '{}/relu_{}'.format(block_name5, expand1)
+    net[relu_name17] = L.ReLU(net[conv_name16], in_place=True)
+
+    conv_name17 = '{}/{}'.format(block_name5, expand3)
+    net[conv_name17] = L.Convolution(net[relu_name16], num_output=192, pad=1, kernel_size=3, **kwargs)
+
+    relu_name18 = '{}/relu_{}'.format(block_name5, expand3)
+    net[relu_name18] = L.ReLU(net[conv_name17], in_place=True)
+
+    concat_name6 = '{}/concat'.format(block_name5)
+    net[concat_name6] = L.Concat(net[conv_name16], net[conv_name17])
+
+    conv_name18 = '{}/{}'.format(block_name6, squeeze1)
+    net[conv_name18] = L.Convolution(net[concat_name6], num_output=64, kernel_size=1, **kwargs)
+
+    relu_name19 = '{}/relu_{}'.format(block_name6, squeeze1)
+    net[relu_name19] = L.ReLU(net[conv_name18], in_place=True)
+
+    conv_name19 = '{}/{}'.format(block_name6, expand1)
+    net[conv_name19] = L.Convolution(net[relu_name19], num_output=256, kernel_size=1, **kwargs)
+
+    relu_name20 = '{}/relu_{}'.format(block_name6, expand1)
+    net[relu_name20] = L.ReLU(net[conv_name19], in_place=True)
+
+    conv_name20 = '{}/{}'.format(block_name6, expand3)
+    net[conv_name20] = L.Convolution(net[relu_name19], num_output=256, pad=1, kernel_size=3, **kwargs)
+
+    relu_name21 = '{}/relu_{}'.format(block_name6, expand3)
+    net[relu_name21] = L.ReLU(net[conv_name20], in_place=True)
+
+    concat_name7 = '{}/concat'.format(block_name6)
+    net[concat_name7] = L.Concat(net[conv_name19], net[conv_name20])
+
+    conv_name21 = '{}/{}'.format(block_name7, squeeze1)
+    net[conv_name21] = L.Convolution(net[concat_name7], num_output=64, kernel_size=1, **kwargs)
+
+    relu_name22 = '{}/relu_{}'.format(block_name7, squeeze1)
+    net[relu_name22] = L.ReLU(net[conv_name21], in_place=True)
+
+    conv_name22 = '{}/{}'.format(block_name7, expand1)
+    net[conv_name22] = L.Convolution(net[relu_name22], num_output=256, kernel_size=1, **kwargs)
+
+    relu_name23 = '{}/relu_{}'.format(block_name7, expand1)
+    net[relu_name23] = L.ReLU(net[conv_name22], in_place=True)
+
+    conv_name23 = '{}/{}'.format(block_name7, expand3)
+    net[conv_name23] = L.Convolution(net[relu_name22], num_output=256, pad=1, kernel_size=3, **kwargs)
+
+    relu_name24 = '{}/relu_{}'.format(block_name7, expand3)
+    net[relu_name24] = L.ReLU(net[conv_name23], in_place=True)
+
+    concat_name8 = '{}/concat'.format(block_name7)
+    net[concat_name8] = L.Concat(net[conv_name22], net[conv_name23])
+
+    net.drop9 = L.Dropout(net[concat_name8], dropout_ratio=0.5, in_place=True)
+
+    net.conv10 = L.Convolution(net.drop9, num_output=1000, kernel_size=1, **mod_kwargs)
+
+    net.relu_conv10 = L.ReLU(net.conv10, in_place=True)
+
+    net.pool10 = L.Pooling(net.relu_conv10, pool=P.Pooling.AVE, global_pooling=True)
+
+    return net
+
+
+
 def CreateMultiBoxHead(net, data_layer="data", num_classes=[], from_layers=[],
         use_objectness=False, normalizations=[], use_batchnorm=True, lr_mult=1,
         use_scale=True, min_sizes=[], max_sizes=[], prior_variance = [0.1],
